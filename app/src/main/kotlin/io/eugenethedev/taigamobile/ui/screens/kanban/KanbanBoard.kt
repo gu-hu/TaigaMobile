@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -14,9 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +52,7 @@ fun KanbanBoard(
     val cellOuterPadding = 8.dp
     val cellPadding = 8.dp
     val cellWidth = 280.dp
+    val cellWidthCollapsed = 45.dp
     val backgroundCellColor = MaterialTheme.colorScheme.surfaceColorAtElevation(kanbanBoardTonalElevation)
 
     swimlanes.takeIf { it.isNotEmpty() }?.let {
@@ -97,31 +101,37 @@ fun KanbanBoard(
 
         statuses.forEach { status ->
             val statusStories = storiesToDisplay.filter { it.status == status }
+            var collapsed by remember { mutableStateOf(false) }
 
             Column {
                 Header(
                     text = status.name,
                     storiesCount = statusStories.size,
-                    cellWidth = cellWidth,
+                    cellWidth = if (collapsed) cellWidthCollapsed else cellWidth,
                     cellOuterPadding = cellOuterPadding,
                     stripeColor = status.color.toColor(),
                     backgroundColor = backgroundCellColor,
-                    onAddClick = { navigateToCreateTask(status.id, selectedSwimlane?.id) }
+                    onAddClick = { navigateToCreateTask(status.id, selectedSwimlane?.id) },
+                    collapsed = collapsed,
+                    onCollapseClick = { collapsed = !collapsed },
                 )
 
                 LazyColumn(
                     Modifier
                         .fillMaxHeight()
-                        .width(cellWidth)
+                        .width(if (collapsed) cellWidthCollapsed else cellWidth)
                         .background(backgroundCellColor)
                         .padding(cellPadding)
+                        .clickable(collapsed) { collapsed = !collapsed }
                 ) {
-                    items(statusStories) {
-                        StoryItem(
-                            story = it,
-                            assignees = it.assignedIds.mapNotNull { id -> team.find { it.id == id } },
-                            onTaskClick = { navigateToStory(it.id, it.ref) }
-                        )
+                    if (!collapsed) {
+                        items(statusStories) {
+                            StoryItem(
+                                story = it,
+                                assignees = it.assignedIds.mapNotNull { id -> team.find { it.id == id } },
+                                onTaskClick = { navigateToStory(it.id, it.ref) }
+                            )
+                        }
                     }
 
                     item {
@@ -141,7 +151,9 @@ private fun Header(
     cellOuterPadding: Dp,
     stripeColor: Color,
     backgroundColor: Color,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    collapsed: Boolean,
+    onCollapseClick: () -> Unit,
 ) = Row(
     modifier = Modifier
         .padding(end = cellOuterPadding, bottom = cellOuterPadding)
@@ -152,7 +164,8 @@ private fun Header(
                 bottomStart = CornerSize(0.dp),
                 bottomEnd = CornerSize(0.dp)
             )
-        ),
+        )
+        .clickable { onCollapseClick() },
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween
 ) {
@@ -183,11 +196,20 @@ private fun Header(
         )
     }
 
-    PlusButton(
-        tint = MaterialTheme.colorScheme.outline,
-        onClick = onAddClick,
-        modifier = Modifier.weight(0.2f)
-    )
+    if (collapsed) {
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_down),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.rotate(-90f)
+        )
+    } else {
+        PlusButton(
+            tint = MaterialTheme.colorScheme.outline,
+            onClick = onAddClick,
+            modifier = Modifier.weight(0.2f)
+        )
+    }
 }
 
 @Composable
