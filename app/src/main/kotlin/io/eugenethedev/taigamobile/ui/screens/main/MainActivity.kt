@@ -183,9 +183,9 @@ class MainActivity : AppCompatActivity() {
 enum class Screens(val route: String, @StringRes val resourceId: Int, @DrawableRes val iconId: Int) {
     Dashboard(Routes.dashboard, R.string.dashboard_short, R.drawable.ic_dashboard),
     Scrum(Routes.scrum, R.string.scrum, R.drawable.ic_scrum),
+    Kanban(Routes.kanban, R.string.kanban, R.drawable.ic_kanban),
     Epics(Routes.epics, R.string.epics, R.drawable.ic_epics),
     Issues(Routes.issues, R.string.issues, R.drawable.ic_issues),
-    More(Routes.more, R.string.more, R.drawable.ic_more)
 }
 
 object Routes {
@@ -194,7 +194,6 @@ object Routes {
     const val scrum = "scrum"
     const val epics = "epics"
     const val issues = "issues"
-    const val more = "more"
     const val team = "team"
     const val settings = "settings"
     const val kanban = "kanban"
@@ -279,12 +278,6 @@ fun MainScreen(
                 IssuesScreen(
                     navController = navController,
                     onError = onError
-                )
-            }
-
-            composable(Routes.more) {
-                MoreScreen(
-                    navController = navController
                 )
             }
 
@@ -380,41 +373,4 @@ fun MainScreen(
             }
         }
     }
-}
-
-@Composable
-fun MoreScreen(
-    navController: NavController
-) = Column(Modifier.fillMaxSize()) {
-    AppBarWithBackButton(
-        title = { Text(stringResource(R.string.more)) }
-    )
-
-    @Composable
-    fun Item(
-        @DrawableRes iconId: Int,
-        @StringRes nameId: Int,
-        route: String
-    ) = ContainerBox(onClick = { navController.navigate(route) }) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painter = painterResource(iconId),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.outline
-            )
-
-            Spacer(Modifier.width(8.dp))
-
-            Text(stringResource(nameId))
-        }
-    }
-
-    val space = 2.dp
-
-    Item(R.drawable.ic_team, R.string.team, Routes.team)
-    Spacer(Modifier.height(space))
-    Item(R.drawable.ic_kanban, R.string.kanban, Routes.kanban)
-    Spacer(Modifier.height(space))
-    Item(R.drawable.ic_settings, R.string.settings, Routes.settings)
 }

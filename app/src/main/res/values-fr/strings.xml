@@ -29,7 +29,6 @@
     <string name="issues">Tickets</string>
     <string name="team">Equipe</string>
     <string name="settings">Paramètres</string>
-    <string name="more">Plus</string>
     <string name="kanban">Kanban</string>
 
     <string name="choose_project_title">Selectionner un projet</string>
